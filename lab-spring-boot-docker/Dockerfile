@@ -1,7 +1,7 @@
 FROM maven:3.8-openjdk-11-slim as DEPENDENCIES
 WORKDIR /opt/app
 COPY pom.xml .
-RUN mvn -B -e -C clean org.apache.maven.plugins:maven-dependency-plugin:3.3.0:resolve-plugins org.apache.maven.plugins:maven-dependency-plugin:3.3.0:go-offline
+RUN mvn -B -e -C clean org.apache.maven.plugins:maven-dependency-plugin:3.3.0:go-offline
 
 # Copy the dependencies from the DEPS stage with the advantage
 # of using docker layer caches. If something goes wrong from this
