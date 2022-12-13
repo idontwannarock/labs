@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mqtt Websockets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" integrity="sha512-Y5n0fbohPllOQ21fTwM/h9sQQ/1a1h5KhweGhu2zwD8lAoJnTgVa7NIrFa1bRDIMQHixtyuRV2ubIx+qWbGdDA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        function getFormatDate() {
+            const date = new Date();
+            let month = date.getMonth() + 1;
+            let strDate = date.getDate();
+            let strHours = date.getHours();
+            let strMinutes = date.getMinutes();
+            let strSeconds = date.getSeconds();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            if (strHours >= 0 && strHours <= 9) {
+                strHours = "0" + strHours;
+            }
+            if (strMinutes >= 0 && strMinutes <= 9) {
+                strMinutes = "0" + strMinutes;
+            }
+            if (strSeconds >= 0 && strSeconds <= 9) {
+                strSeconds = "0" + strSeconds;
+            }
+            return date.getFullYear() + "-" + month + "-" + strDate + " " + strHours + ":" + strMinutes + ":" + strSeconds;
+        }
+    </script>
+
+    <script type="text/javascript">
+        const host = '127.0.0.1';
+        const port = 15675;
+        const topic = 'amq.topic';
+        const clientId = 'my_client_id_' + (Math.random() * 10000);
+        const reconnectTimeout = 10000;
+        const cleanSession = true;
+        const username = 'guest';
+        const password = 'guest';
+        const useTls = false;
+
+        let mqtt;
+
+        function mqttConnect() {
+            mqtt = new Paho.MQTT.Client(host, port,  "/ws", clientId);
+            mqtt.onConnectionLost = onConnectionLost;
+            mqtt.onMessageArrived = onMessageArrived;
+            mqtt.connect({
+                timeout: 3,
+                keepAliveInterval: 60,
+                cleanSession: cleanSession,
+                onSuccess: onConnect,
+                onFailure: onFailure,
+                useSSL: useTls,
+                userName: username,
+                password: password
+            });
+        }
+
+        function onFailure(message) {
+            console.log("onFailure: " + message);
+            $("#arrivedDiv").append("<div style='color: red'> " + getFormatDate() + " onFailure: " + message.errorMessage + " </div>");
+            setTimeout(mqttConnect, reconnectTimeout);
+        }
+
+        function onConnect() {
+            mqtt.subscribe(topic, { qos: 0 });
+
+            let message = new Paho.MQTT.Message("Connect success, Hello MQTT!");
+            message.destinationName = topic;
+            mqtt.send(message);
+        }
+
+        function onConnectionLost(response) {
+            console.log("onConnectionLost: " + response);
+            setTimeout(mqttConnect, reconnectTimeout);
+        }
+
+        function onMessageArrived(message) {
+            let topic = message.destinationName;
+            let payload = message.payloadString;
+            $("#arrivedDiv").append("<div> " + getFormatDate() + " recv msg: topic=" + topic + ", payload=" + payload + " </div>");
+        }
+
+        mqttConnect();
+    </script>
+</head>
+<body>
+
+<div style="margin-top: 30px">
+    <div style="font-size: 20px; color: darkcyan;">Received mqtt message</div>
+    <hr>
+    <div id="arrivedDiv" style="height: 600px; width: 1000px; overflow: scroll; background: #EEEEEE;">
+        <br>
+    </div>
+</div>
+
+</body>
+</html>
