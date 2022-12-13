@@ -10,7 +10,6 @@ RUN mvn -B -e -C clean org.apache.maven.plugins:maven-dependency-plugin:3.3.0:re
 FROM maven:3.8-openjdk-11-slim as BUILDER
 WORKDIR /opt/app
 COPY --from=DEPENDENCIES /root/.m2 /root/.m2
-COPY --from=DEPENDENCIES /opt/app/ /opt/app
 COPY src /opt/app/src
 COPY pom.xml .
 RUN mvn -B -e -o clean package -DskipTests=true
