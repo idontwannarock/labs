@@ -1,0 +1,9 @@
+FROM node:16.14.2-alpine3.15
+
+WORKDIR /usr/src/app
+COPY ["lab-grpc-react/package.json", "lab-grpc-react/package-lock.json", "./"]
+RUN npm ci
+COPY lab-grpc-react/. .
+RUN npm run build 
+
+CMD [ "npm", "start" ]

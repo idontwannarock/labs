@@ -1,0 +1,21 @@
+# escape=\
+
+FROM maven:3.8-openjdk-11-slim as DEPENDENCIES
+WORKDIR /opt/app
+COPY lab-grpc-spring-boot/pom.xml .
+RUN mvn -B -e -C clean org.apache.maven.plugins:maven-dependency-plugin:3.3.0:go-offline
+
+FROM maven:3.8-openjdk-11-slim as BUILDER
+WORKDIR /opt/app
+COPY --from=DEPENDENCIES /root/.m2 /root/.m2
+COPY proto/*.proto /opt/app/src/main/proto/
+COPY lab-grpc-spring-boot/src/main/resources /opt/app/src/main/resources
+COPY lab-grpc-spring-boot/src/main/java /opt/app/src/main/java
+COPY lab-grpc-spring-boot/pom.xml .
+RUN mvn -B -e -o clean package -Pdocker
+
+FROM azul/zulu-openjdk-alpine:11-jre-headless
+WORKDIR /opt/app
+COPY --from=BUILDER /opt/app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
