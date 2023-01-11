@@ -1,0 +1,19 @@
+* text=auto
+
+*.java text
+*.properties text
+*.pom text
+*.md text
+*.xml text
+*.yml text
+*.yaml text
+*.sh text
+Dockerfile text
+kubeconfig-dev text
+kubeconfig-staging text
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.jar binary
